@@ -64,7 +64,6 @@ body {
     pointer-events: none;
 }
 
-/* --- 顶部：Logo + 校名 --- */
 .brand-top {
     position: relative;
     display: flex;
@@ -251,3 +250,4 @@ input[type="submit"] {
     font-size: 12px;
     margin-top: 2px;
 }
+

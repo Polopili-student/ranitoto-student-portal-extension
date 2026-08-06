@@ -33,7 +33,30 @@
     right.appendChild(login_form);
 
 
-    // move the logo into the sub area 
+    // restore autofill: the page's own script.js sets autocomplete="off"
+    // on #username at runtime, and #password never gets the attribute at all
+    const username = document.querySelector('#username');
+    const password = document.querySelector('#password');
+
+    const fixAutocomplete = () => {
+        if (username && username.getAttribute('autocomplete') !== 'username') {
+            username.setAttribute('autocomplete', 'username');
+        }
+        if (password && password.getAttribute('autocomplete') !== 'current-password') {
+            password.setAttribute('autocomplete', 'current-password');
+        }
+    };
+
+    fixAutocomplete();
+
+    // the page script may re-apply autocomplete="off" after we run
+    new MutationObserver(fixAutocomplete).observe(document.body, {
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['autocomplete']
+    });
+
+    // move the logo into the sub area
     const logo = document.querySelector('#logo');
     const sub_area = document.querySelector('form');
 

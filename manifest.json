@@ -5,6 +5,7 @@
   "description": "Rangitoto school website plugins",
   "permissions": [
     "storage",
+    "unlimitedStorage",
     "tabs",
     "activeTab"
   ],
@@ -34,7 +35,7 @@
         "src/general.css"
       ],
       "js": [
-        "inject.js",
+        "src/inject.js",
         "src/general.js"
       ],
       "world": "MAIN",
@@ -80,7 +81,6 @@
     {
       "resources": [
         "inject.js",
-        "profilePic.jpg",
         "calendar/inject.js",
         "DailyNotice/DailyNotice.html",
         "lib/pdf.worker.mjs"

@@ -69,13 +69,12 @@ export async function fetchNoticeIndex() {
 function parseEntry(text, panelYear, term, url, problems) {
     const m = text.match(ENTRY_RE);
     if (!m) {
-        // 校历、家长信之类的 PDF 也在这页上，认不出日期就跳过，不算错
         return null;
     }
 
     const day = +m[2];
     const month = MONTHS[m[3].slice(0, 3).toLowerCase()];
-    // 文字里自带年份就用它，没有才退回面板标题的年份
+    // if "years" are in the text , else use the panel's year
     const year = m[4] ? +m[4] : panelYear;
 
     if (!month || !year) {
@@ -89,10 +88,6 @@ function parseEntry(text, panelYear, term, url, problems) {
         return null;
     }
 
-    // ★ 文字里的星期几是天然的校验位。对不上说明这条被写错了 —— 而两边都写错的
-    //   概率很低，所以拿文件名当第二意见：文件名的日期如果星期几对得上，且没跑出
-    //   本月，那就是它。实测这条能把 "Tuesday 21st March"（20260331，21 号是周六）
-    //   救回成 3 月 31 号。两边都对不上才认文字。
     const stated = WEEKDAYS[m[1].toLowerCase()];
     let final = date;
 
@@ -114,14 +109,12 @@ function parseEntry(text, panelYear, term, url, problems) {
         date: final,
         url,
         weekday: final.getDay(),
-        cycleDay: cycle ? +cycle[1] : null,   // 学校的 6 天循环，Day 1~6
+        cycleDay: cycle ? +cycle[1] : null, 
         term,
         year,
     };
 }
 
-// 文件名里的 20260331。只当第二意见用，本身也经常是错的
-//（见文件顶部），所以非法值一律扔掉。
 function dateFromFilename(url) {
     const m = url.match(/(20\d{2})(\d{2})(\d{2})/);
     if (!m) return null;

@@ -17,20 +17,14 @@ body {
     background: #fff;
 }
 
-/* ---- 布局：左侧日期列表固定，右侧正文独立滚动 ---- */
 
 .layout {
     display: flex;
     height: 100vh;
-    position: relative;   /* 侧栏开关按它定位 */
-    overflow: hidden;     /* 侧栏滑出去的部分别撑出横向滚动条 */
+    position: relative;   
+    overflow: hidden;     
 }
 
-/* ★ 侧栏开关。它不能放在 .sidebar 里面 —— 侧栏一收起（display:none）
-   按钮会跟着消失，就再也展不开了。所以挂在 .layout 上绝对定位，
-   两个状态之间只是换个位置和样子：
-     展开时  贴在侧栏标题右边（原来 ⟳ 的位置）
-     收起时  变成从左边缘探出来的书签 */
 .side-tab {
     position: absolute;
     z-index: 10;
@@ -45,14 +39,11 @@ body {
     font-size: 17px;
     line-height: 1;
     cursor: pointer;
-    /* 和侧栏同一条时间曲线，看起来才像是跟着一起滑 */
     transition: left .22s ease, background .15s, color .15s;
 }
 
 .side-tab:hover { background: #e8e8ea; color: var(--ink); }
 
-/* 收起后：尺寸、内边距、高度全部不变，只是被侧栏带到了最左边。
-   只有左侧两个角改成直角，贴住边缘才像书签。 */
 .sidebar-hidden .side-tab {
     left: 0;
     background: var(--red);
@@ -63,7 +54,6 @@ body {
 
 .sidebar-hidden .side-tab:hover { background: #9c1732; color: #fff; }
 
-/* ---- 侧边栏 ---- */
 
 .sidebar {
     width: var(--sidebar-w);
@@ -111,7 +101,6 @@ body {
     padding: 7.5px 10px 25px;
 }
 
-/* 学期折叠头 */
 .group-label {
     display: flex;
     align-items: center;
@@ -139,7 +128,6 @@ body {
     transition: transform .15s ease;
 }
 
-/* 收起时箭头转成指向右边 */
 .group.collapsed .chev { transform: rotate(-90deg); }
 .group.collapsed .group-items { display: none; }
 
@@ -188,13 +176,10 @@ body {
     color: var(--muted);
 }
 
-/* 收起：用负 margin 把整条侧栏推到左边框外，而不是 display:none ——
-   后者没法做过渡。负 margin 的好处是 flex 会同步把腾出来的宽度给正文，
-   所以滑动过程中正文是跟着一起展开的，不会等动画结束才跳一下。 */
+
 .sidebar { transition: margin-left .22s ease; }
 .sidebar-hidden .sidebar { margin-left: calc(-1 * var(--sidebar-w)); }
 
-/* ---- 右侧 ---- */
 
 .main {
     flex: 1;
@@ -212,7 +197,6 @@ body {
     transition: padding-left .22s ease;
 }
 
-/* 收起时书签停在最左边，正好压住日期，给它让出位置 */
 .sidebar-hidden .main-head { padding-left: 56px; }
 
 .current {
@@ -240,8 +224,7 @@ body {
 
 .pdf-link:hover { color: var(--red); }
 
-/* 滚动容器铺满，不设 max-width —— 否则滚动条会跟着缩到内容右边，
-   右半屏留一大片空白。定宽居中交给里面的 .notice-inner。 */
+
 .notice {
     flex: 1;
     overflow-y: auto;
@@ -254,7 +237,9 @@ body {
     margin: 0 auto;
 }
 
-/* ---- 状态：加载 / 出错 / 空 ---- */
+.card-title {
+    font-size: 20px !important;
+}
 
 .state {
     padding: 75px 0;
@@ -289,11 +274,7 @@ body {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ---- 通知正文 ---- */
 
-/* ★ 页眉照 PDF 原样：左边红底 DAILY NOTICES / TE PANUI，右边蓝字的
-   DAY N / TE RA N / Duty Deputy Principal，外面一圈细框。两块并排，
-   各自内部保留原来的分行。 */
 .notice-head {
     display: flex;
     align-items: stretch;
@@ -383,7 +364,6 @@ body {
 
 .card > .notice-body:last-child { margin-bottom: 0; }
 
-/* PDF 里的项目符号列表。圆点由这里画，原文那个 bullet 字形在渲染时已经去掉 */
 .notice-list {
     margin: 0 0 7.5px;
     padding-left: 22px;
@@ -397,7 +377,6 @@ body {
 
 .notice-link { color: var(--blue); word-break: break-word; }
 
-/* 表格和带框段落是从 PDF 里截出来的图，按正文宽度比例显示 */
 .notice-table,
 .notice-framed,
 .notice-image {
@@ -408,7 +387,6 @@ body {
     border-radius: 4px;
 }
 
-/* 窄窗口（比如从插件弹窗里开）时，日期列表压成横向一条 */
 @media (max-width: 620px) {
     .layout { flex-direction: column; height: auto; }
     .sidebar { width: 100%; flex: none; border-right: none; border-bottom: 1px solid var(--line); }

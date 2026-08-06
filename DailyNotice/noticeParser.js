@@ -310,15 +310,7 @@ export async function parseNotice(pdfUrl) {
         if (sizeCount[s] > maxCount) { maxCount = sizeCount[s]; bodySize = Number(s); }
     }
 
-    // which msg does an img belong to. the order tells nothing, a poster can sit
-    // before or after its own msg, so measure the real space on both sides instead:
-    // an img always sticks to its own msg and leaves a blank line to the other one
-    // case 3: img in the middle of a msg, title above and body below, both tight.
-    //         it belongs to neither side, it is already inside the msg
-    // case 4: img and text side by side, the up down measure means nothing, see sideOf
     const lineH = bodySize || 10;
-    // base line sits at the bottom of the word, ascent above it and descent below
-    // used to turn a base line back into the real top and bottom of a para
     const DESCENT = 0.25, ASCENT = 0.75;
     for (let i = 0; i < paragraphs.length; i++) {
         const p = paragraphs[i];
@@ -335,15 +327,10 @@ export async function parseNotice(pdfUrl) {
         const prev = near(i - 1, -1);
         const next = near(i + 1, +1);
 
-        // catch the left and right case first: the img covers several paras in Y,
-        // so the text is not above or below it but beside it, and above/below down
-        // there would be a meaningless number, it can even go negative
-        // two conditions: real overlap in Y (half a line at least) + no overlap in X
-        // a word that really overlaps the img in X was eaten by the box path above
         const SIDE_TOL = 3;
         const sideOf = q => {
             if (q.image || q.page !== p.page) return false;
-            if (q.size >= bodySize * 1.5) return false;   // keep the section title out
+            if (q.size >= bodySize * 1.5) return false;  
             const qs = q.size || lineH;
             const overlap =
                 Math.min(q.y + qs * ASCENT, p.image.maxY) -
@@ -354,14 +341,7 @@ export async function parseNotice(pdfUrl) {
         const sideIdx = [];
         paragraphs.forEach((q, k) => { if (sideOf(q)) sideIdx.push(k); });
         if (sideIdx.length) {
-            // the paras beside the same img + that img == one msg. clear newItem on
-            // all but the first one so the card won't break in the middle, the blank
-            // line between them is the layout inside this msg, not a split of msgs
             sideIdx.slice(1).forEach(k => { paragraphs[k].newItem = false; });
-            // which side the img goes with depends on the order: the group comes after
-            // the img == the img is the head of this msg, so open a new card
-            // (a hard coded false here would push the img into the prev msg)
-            // the img inside or at the end of the group == the card is already open
             p.attachNext = sideIdx[0] > i;
             console.log(
                 `Page ${p.page} → image wrapped by ${sideIdx.length} paragraph(s) beside it, ` +
@@ -370,10 +350,6 @@ export async function parseNotice(pdfUrl) {
             continue;
         }
 
-        // turn both sides into the real blank between the img and the words, only
-        // then can they be compared and a line height work as a threshold
-        // base line is at the bottom of the word, so cut the descent off the para
-        // above and the ascent off the para below
         const above = prev
             ? (prev.yEnd - (prev.size || lineH) * DESCENT) - p.image.maxY
             : Infinity;
@@ -381,24 +357,11 @@ export async function parseNotice(pdfUrl) {
             ? p.image.minY - (next.y + (next.size || lineH) * ASCENT)
             : Infinity;
 
-        // msgs are split by a whole blank line, an img and the words inside one msg
-        // almost touch, so half a line height is enough to tell them apart
         const TIGHT = lineH * 0.6;
 
         if (!prev) {
-            // img at the very top of a page, no word above it to measure (near stops
-            // at the page change), so above is always Infinity and the compare always
-            // says "goes with the msg below"
-            // only the space below can tell: tight == it is the img of the msg below,
-            // a blank line == it has nothing to do with that msg, it was pushed here
-            // from the prev page, so it goes with the prev page
-            // (don't judge by how much blank the prev page left, the layout engine
-            //  pushes an img for keep-with-next or anchoring too, not only when it
-            //  does not fit)
             p.attachNext = below < TIGHT;
         } else if (above < TIGHT && below < TIGHT) {
-            // in the middle of a msg: the para below is still the same msg. its newItem
-            // was measured across the whole img so it always looks like a new msg, fix it here
             p.attachNext = false;
             if (next) next.newItem = false;
         } else {
@@ -450,9 +413,6 @@ export async function parseNotice(pdfUrl) {
     return blocks;
 }
 
-// ---- matrix tools ----------------------------------------------------------
-
-// m1 x m2: apply m2 first, then m1 (same as canvas ctx.transform)
 function matMul(m1, m2) {
     return [
         m1[0] * m2[0] + m1[2] * m2[1],
@@ -464,7 +424,6 @@ function matMul(m1, m2) {
     ];
 }
 
-// turn a bbox in the path's own space into the page space with the CTM
 function applyMatrixToBBox(bbox, m) {
     const pts = [
         [bbox[0], bbox[1]], [bbox[2], bbox[1]],
@@ -478,9 +437,6 @@ function applyMatrixToBBox(bbox, m) {
     };
 }
 
-// walk the operator list, collect the box of every path and img in the page space
-// argsArray[i][2] is the box in the path's own space, times the current CTM to get
-// the page space. same for an img: the CTM maps the unit square to its place on the page
 function collectGeometry(ops) {
     const OPS = pdfjsLib.OPS;
     const paths = [];
@@ -522,11 +478,6 @@ function collectGeometry(ops) {
     return { paths, images };
 }
 
-// ---- region detect ----------------------------------------------------------
-
-// find every region on a page that has to be cut into an img: table, boxed para, picture
-// a table border in a pdf is just a pile of thin and long rects, so pick those out
-// first, then group the ones that touch each other, one group == one table
 async function detectRegions(page, pageNum) {
     const ops = await page.getOperatorList();
     const viewport = page.getViewport({ scale: 1 });
@@ -700,11 +651,7 @@ async function detectRegions(page, pageNum) {
 // cut a region into an img, return a data url ready to drop into <img>
 async function renderRegionImage(page, box, scale = 2) {
     const viewport = page.getViewport({ scale });
-    // the border is about 1pt wide and half of it is drawn outside the box, so keep
-    // 1pt of padding to wrap it in. more than that cuts the line above into the img
     const PAD = scale;
-
-    // pdf coord -> viewport coord (Y is flipped, so take min/max)
     const [x1, y1] = viewport.convertToViewportPoint(box.minX, box.minY);
     const [x2, y2] = viewport.convertToViewportPoint(box.maxX, box.maxY);
     const left = Math.min(x1, x2) - PAD;
