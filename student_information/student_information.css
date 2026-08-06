@@ -348,7 +348,9 @@ th.text-center,
     cursor: default;
 }
 
-.priv-masked:hover::after {
+/* Revealed by hovering the whole row, not just the asterisks themselves —
+   the mask is often narrower than the value it covers. */
+.data_item:hover .priv-masked::after {
     display: none;
 }
 

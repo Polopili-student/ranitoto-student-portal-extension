@@ -30,9 +30,7 @@
     const style = document.createElement("style");
     document.head.appendChild(style);
 
-    // No saved picture = no content override at all, so the page shows its own.
-    // `img#...` outranks the stylesheet's `#img_srch_student` rule, so the shape
-    // wins regardless of injection order.
+
     function renderStyle() {
         const rules = [];
         if (saved) rules.push(`${PIC_SELECTOR} { content: url("${saved}"); }`);
@@ -40,7 +38,6 @@
         style.textContent = rules.join("\n");
     }
 
-    // `content:` never touches the src attribute, so this stays the site's own image
     function originalPicSrc() {
         const img = document.querySelector(PIC_SELECTOR);
         return img ? (img.currentSrc || img.src || "") : "";
@@ -141,10 +138,10 @@
     const shapeBtns = [...customPage.querySelectorAll('.shape-btn')];
     const privChecks = [...customPage.querySelectorAll('.priv-check')];
 
-    let saved = null;         // data URL currently applied to the page
-    let pending = null;       // data URL waiting to be saved
-    let shape = "circle";     // "circle" | "square"
-    let masked = new Set();   // field keys currently covered
+    let saved = null;        
+    let pending = null;       
+    let shape = "circle";     
+    let masked = new Set();   
 
     // Falls back to whatever the page itself is showing.
     function showPreview(url) {
@@ -162,8 +159,6 @@
         privChecks.forEach(c => { c.checked = masked.has(c.dataset.field); });
     }
 
-    // The page text is never rewritten — an ::after overlay sits on top of it,
-    // so nothing is lost and a re-render can't leave stale asterisks behind.
     function applyMasks() {
         PRIVACY_FIELDS.forEach(f => {
             const on = masked.has(f.key);
@@ -230,7 +225,6 @@
         status.className = 'setting-status' + (kind ? ' is-' + kind : '');
     }
 
-    // Shrink to MAX_EDGE and re-encode, so storage stays small and the page paints fast.
     function shrink(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -389,9 +383,6 @@
 
         }
 
-        // The observer only watches childList, so the class/data-mask attributes
-        // applyMasks writes can't re-trigger it. Coalesced per frame because the
-        // page re-renders these panels on every tab switch.
         let queued = false;
         function refresh() {
             queued = false;
