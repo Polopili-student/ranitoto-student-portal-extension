@@ -10,7 +10,8 @@
     "activeTab"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "https://spider.rangitoto.school.nz/*",
+    "https://idp.rangitoto.school.nz/*"
   ],
   "action": {
     "default_popup": "popup.html"
@@ -80,13 +81,13 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "inject.js",
+        "src/inject.js",
         "calendar/inject.js",
         "DailyNotice/DailyNotice.html",
         "lib/pdf.worker.mjs"
       ],
       "matches": [
-        "<all_urls>"
+        "https://spider.rangitoto.school.nz/*"
       ]
     }
   ]

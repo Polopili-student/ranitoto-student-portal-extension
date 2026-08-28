@@ -3,11 +3,10 @@
     const SHAPE_KEY = "profilePicShape";
     const PRIVACY_KEY = "maskedFields";
     const PIC_SELECTOR = "#img_srch_student, .text-left img";
-    const SQUARE_RADIUS = "0";            // bump to e.g. "6px" for softened corners
-    const MAX_EDGE = 512;                 // longest edge kept after downscaling
-    const MAX_FILE_SIZE = 8 * 1024 * 1024;
+    const SQUARE_RADIUS = "0";            
+    const MAX_EDGE = 512;                 
+    const MAX_FILE_SIZE = 8 * 1024 * 1024; // max size of 8mb
 
-    // Each value on the page lives in span.lbl_student_<key>
     const PRIVACY_FIELDS = [
         { key: "student_name", label: "Student Name" },
         { key: "regno", label: "Registration Number" },
@@ -143,7 +142,7 @@
     let shape = "circle";     
     let masked = new Set();   
 
-    // Falls back to whatever the page itself is showing.
+    // whatever the page itself is showing.
     function showPreview(url) {
         const src = url || originalPicSrc();
         if (src) preview.src = src;
@@ -369,7 +368,7 @@
             const icon = document.createElement('span');
             icon.className = 'customize-icon';
             icon.innerHTML =
-                `
+            `
             <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff">
             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
             </svg>

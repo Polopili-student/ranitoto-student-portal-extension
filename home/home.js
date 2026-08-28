@@ -192,6 +192,43 @@
     return true;
   }
 
+  // place the school report
+  function embedSchoolReport() {
+    const REPORT_ID = '__rangi-school-report';
+    if (document.getElementById(REPORT_ID)) return true; // already done
+    const menuCard = findCardByTitle('Menu');
+    if (!menuCard) return false;
+
+    const box = menuCard.querySelector('[data-slot="BoxContent"]');
+    if (!box) return false;
+
+    // find the three section by h3
+    const sectionByTitle = (kw) => {
+      const h3 = Array.from(box.querySelectorAll('h3')).find((h) =>
+        h.textContent.trim().startsWith(kw)
+      );
+      return h3 ? h3.parentElement : null;
+    };
+    const secPages = sectionByTitle('My Pages');
+    const secNoti = sectionByTitle('Notifications');
+    const secQuick = sectionByTitle('Quicklinks');
+    if (!secPages || !secNoti || !secQuick) return false; // if not ready, skip 
+
+    const reportDiv = document.createElement('li');
+    reportDiv.id = REPORT_ID;
+
+    reportDiv.innerHTML = 
+    `
+    <a class="hover:bg-prime dark:text-foreground flex min-h-8 gap-1.5 border-b border-dashed py-2 pr-2 pl-2 text-sm font-medium text-pretty text-(--fsm-space-blue) lg:pr-4 pointer-coarse:py-3"
+      href="https://spider.rangitoto.school.nz/Pages/ReportView.aspx?arg=%27QUICKPRINT%27&type=undefined&m=undefined&wa=">
+    School Report
+    </a>
+    `;
+    secPages.querySelector('ul').appendChild(reportDiv);
+    return true;
+  }
+
+
   const RETRY_INTERVAL = 200;
   const MAX_RETRY = 25;
 
@@ -199,8 +236,9 @@
     const doneA = mergeNotifications();
     const doneB = buildTwoColumn();
     const doneC = tidyMenu();
-    const doneD = embedDashboardTitle();
-    if (doneA && doneB && doneC && doneD) { reveal(); return; }
+    const doneD = embedSchoolReport();
+    const doneE = embedDashboardTitle();
+    if (doneA && doneB && doneC && doneD && doneE) { reveal(); return; }
     if (count < MAX_RETRY) {
       setTimeout(() => attempt(count + 1), RETRY_INTERVAL);
     } else {
