@@ -11,7 +11,8 @@
   ],
   "host_permissions": [
     "https://spider.rangitoto.school.nz/*",
-    "https://idp.rangitoto.school.nz/*"
+    "https://idp.rangitoto.school.nz/*",
+    "https://www.rangitoto.school.nz/*"
   ],
   "action": {
     "default_popup": "popup.html"
